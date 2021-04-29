@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.InputEvent;
 
@@ -8,8 +10,50 @@ public class View extends JFrame {
     JMenu menuTP, menuFichier;
     JMenuItem miApropos, miQuitter, miNouveau, miOuvrir, miFermer, miEnregistrer, miEnregistrerSous, miExporter;
 
+    JTable tableInventaire;
+    JTable tableEntretien;
+    DefaultTableModel modelInventaire;
+    DefaultTableModel modelEntretien;
+
+    JTextField txfFiltrer;
+    JButton btnFiltrer;
+    JButton btnInventairePlus;
+    JButton btnInventaireMoins;
+    JButton btnEntretienPlus;
+    JButton btnEntretienMoins;
+    JButton btnQuitter;
+
+
     public View(){
-        
+
+        //Création de la table d'inventaire
+        String[] colNomInventaire = {"Nom", "Catégorie", "Prix", "Date d'achat", "Description"};
+        modelInventaire = new DefaultTableModel(null,colNomInventaire);
+        tableInventaire = new JTable(modelInventaire){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tableInventaire.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        JScrollPane scrollInventaire = new JScrollPane(tableInventaire);
+        scrollInventaire.setPreferredSize(new Dimension(600,300));
+
+        //Création de la table d'entretien
+        String[] colNomEntretien = {"Date", "Description"};
+        modelEntretien = new DefaultTableModel(null, colNomEntretien);
+        tableEntretien = new JTable(modelEntretien){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tableEntretien.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        JScrollPane scrollEntretien = new JScrollPane(tableEntretien);
+        scrollEntretien.setPreferredSize(new Dimension(300,300));
+
         //Création de la barre du menu
         menuBar = new JMenuBar();
 
@@ -23,7 +67,6 @@ public class View extends JFrame {
         miQuitter = new JMenuItem("Quitter");
         miQuitter.addActionListener(e -> miQuitterAction());
         miQuitter.setAccelerator(KeyStroke.getKeyStroke('Q', InputEvent.CTRL_DOWN_MASK));
-
 
         //Création du menu Fichier
         menuFichier = new JMenu("Fichier");
@@ -52,8 +95,6 @@ public class View extends JFrame {
         miExporter.addActionListener(e -> miExporterAction());
         miExporter.setAccelerator(KeyStroke.getKeyStroke('E', InputEvent.CTRL_DOWN_MASK));
 
-
-
         menuBar.add(menuTP);
         menuBar.add(menuFichier);
 
@@ -70,23 +111,98 @@ public class View extends JFrame {
         menuFichier.addSeparator();
         menuFichier.add(miExporter);
 
+        //Section filtre
+        txfFiltrer = new JTextField();
+        txfFiltrer.setPreferredSize(new Dimension(200,20));
+
+        btnFiltrer = new JButton("Filtrer");
+
+        //Section boutton d'ajouts
+        btnInventairePlus = new JButton("+");
+        btnInventaireMoins = new JButton("-");
+
+        btnEntretienPlus = new JButton("+");
+        btnEntretienMoins = new JButton("-");
+
+        //Boutton quitter
+        btnQuitter = new JButton("Quitter");
+
+        //Création du JPanel top
+        JPanel pnlNord = new JPanel();
+        pnlNord.setLayout(new BorderLayout());
+        JPanel pnlLeftNord = new JPanel(new BorderLayout(5,5));
+        pnlLeftNord.add(txfFiltrer, BorderLayout.WEST);
+        pnlLeftNord.add(btnFiltrer, BorderLayout.EAST);
+        pnlNord.add(pnlLeftNord, BorderLayout.WEST);
+
+        //Création JPanel centre
+        JPanel pnlCentre = new JPanel();
+        pnlCentre.setLayout(new BorderLayout(5,5));
+
+        JPanel pnlCentreGauche = new JPanel(new BorderLayout());
+        JPanel pnlCentreGaucheBas = new JPanel(new BorderLayout());
+        pnlCentreGaucheBas.add(btnInventairePlus, BorderLayout.WEST);
+        pnlCentreGaucheBas.add(btnInventaireMoins, BorderLayout.EAST);
+
+        pnlCentreGauche.add(scrollInventaire, BorderLayout.NORTH);
+        pnlCentreGauche.add(pnlCentreGaucheBas, BorderLayout.CENTER);
+
+        JPanel pnlCentreDroit = new JPanel(new BorderLayout());
+        JPanel pnlCentreDroitBas = new JPanel(new BorderLayout());
+        pnlCentreDroitBas.add(btnEntretienPlus, BorderLayout.WEST);
+        pnlCentreDroitBas.add(btnEntretienMoins, BorderLayout.EAST);
+
+        pnlCentreDroit.add(scrollEntretien, BorderLayout.NORTH);
+        pnlCentreDroit.add(pnlCentreDroitBas, BorderLayout.CENTER);
+
+        pnlCentre.add(pnlCentreGauche, BorderLayout.WEST);
+        pnlCentre.add(pnlCentreDroit, BorderLayout.EAST);
+
+
+        //Création du panel bas
+        JPanel pnlBas = new JPanel(new BorderLayout(5,5));
+
+        JPanel pnlBasDroit = new JPanel(new BorderLayout());
+        pnlBasDroit.add(btnQuitter, BorderLayout.EAST);
+        pnlBas.add(pnlBasDroit, BorderLayout.SOUTH);
+
+        //Création du frame
         frame = new JFrame("Marc-Antoine Dubois - 1909082");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(950,800);
         frame.setLocationRelativeTo(null);
-        frame.setLayout(new FlowLayout());
+        frame.setLayout(new BorderLayout(15,10));
         frame.setResizable(false);
 
         //Ajouter menuBar au frame
         frame.setJMenuBar(menuBar);
+        //Ajout du panel nord au frame
+        frame.add(pnlNord, BorderLayout.PAGE_START);
+        //Ajout du panel centre au frame
+        frame.add(pnlCentre, BorderLayout.CENTER);
+        //Ajout panel bas frame
+        frame.add(pnlBas, BorderLayout.SOUTH);
 
         frame.setVisible(true);
     }
 
+    //Affiche un pop up avec l'information du projet
     private void miAproposAction() {
+        JOptionPane.showMessageDialog(frame, """
+                Travail pratique 2
+                Créé par Marc-Antoine Dubois + 1909082
+                Session H2021
+                Dans le cadre du cours 420-C27""","À propos", JOptionPane.PLAIN_MESSAGE);
     }
 
+    // Affiche un pop up qui demande à l'utilisateur s'il veut quitter le programme
     private void miQuitterAction() {
+        int result = JOptionPane.showConfirmDialog(frame, "Voulez-vous vraiment quitter?", "Confirmation",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if(result == JOptionPane.YES_OPTION){
+            frame.dispose();
+        }
     }
 
     private void miNouveauAction() {
@@ -106,7 +222,6 @@ public class View extends JFrame {
 
     private void miExporterAction() {
     }
-
 
     public static void main(String[] args) {
         View myView = new View();
