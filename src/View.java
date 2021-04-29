@@ -141,22 +141,30 @@ public class View extends JFrame {
 
         JPanel pnlCentreGauche = new JPanel(new BorderLayout());
         JPanel pnlCentreGaucheBas = new JPanel(new BorderLayout());
-        pnlCentreGaucheBas.add(btnInventairePlus, BorderLayout.WEST);
-        pnlCentreGaucheBas.add(btnInventaireMoins, BorderLayout.EAST);
+        JPanel pnlCentreGaucheCoinBas = new JPanel(new BorderLayout(5,5));
 
-        pnlCentreGauche.add(scrollInventaire, BorderLayout.NORTH);
-        pnlCentreGauche.add(pnlCentreGaucheBas, BorderLayout.CENTER);
+        pnlCentreGaucheCoinBas.add(btnInventairePlus, BorderLayout.WEST);
+        pnlCentreGaucheCoinBas.add(btnInventaireMoins, BorderLayout.EAST);
+
+        pnlCentreGaucheBas.add(pnlCentreGaucheCoinBas, BorderLayout.WEST);
+
+        pnlCentreGauche.add(scrollInventaire, BorderLayout.CENTER);
+        pnlCentreGauche.add(pnlCentreGaucheBas, BorderLayout.SOUTH);
 
         JPanel pnlCentreDroit = new JPanel(new BorderLayout());
         JPanel pnlCentreDroitBas = new JPanel(new BorderLayout());
-        pnlCentreDroitBas.add(btnEntretienPlus, BorderLayout.WEST);
-        pnlCentreDroitBas.add(btnEntretienMoins, BorderLayout.EAST);
+        JPanel pnlCentreDroitCoinBas = new JPanel(new BorderLayout(5,5));
 
-        pnlCentreDroit.add(scrollEntretien, BorderLayout.NORTH);
-        pnlCentreDroit.add(pnlCentreDroitBas, BorderLayout.CENTER);
+        pnlCentreDroitCoinBas.add(btnEntretienPlus, BorderLayout.WEST);
+        pnlCentreDroitCoinBas.add(btnEntretienMoins, BorderLayout.EAST);
+
+        pnlCentreDroitBas.add(pnlCentreDroitCoinBas, BorderLayout.WEST);
+
+        pnlCentreDroit.add(scrollEntretien, BorderLayout.CENTER);
+        pnlCentreDroit.add(pnlCentreDroitBas, BorderLayout.SOUTH);
 
         pnlCentre.add(pnlCentreGauche, BorderLayout.WEST);
-        pnlCentre.add(pnlCentreDroit, BorderLayout.EAST);
+        pnlCentre.add(pnlCentreDroit, BorderLayout.CENTER);
 
 
         //Création du panel bas
