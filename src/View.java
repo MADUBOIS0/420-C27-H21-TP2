@@ -126,6 +126,7 @@ public class View extends JFrame {
 
         //Boutton quitter
         btnQuitter = new JButton("Quitter");
+        btnQuitter.addActionListener(e -> btnQuitterAction());
 
         //Création du JPanel top
         JPanel pnlNord = new JPanel();
@@ -229,6 +230,11 @@ public class View extends JFrame {
     }
 
     private void miExporterAction() {
+    }
+
+    private void btnQuitterAction() {
+        // A CHANGER
+        frame.dispose();
     }
 
     public static void main(String[] args) {

@@ -3,14 +3,14 @@ import java.util.LinkedHashMap;
 
 public class Inventaire {
     private String nom;
-    private int numSerie;
+    private String numSerie;
     private String categorie;
     private double prix;
     private LocalDate dateAchat;
     private String description;
     private LinkedHashMap<LocalDate,String> entretiens;
 
-    public Inventaire(String nom, int numSerie, String categorie, double prix, LocalDate dateAchat, String description){
+    public Inventaire(String nom, String numSerie, String categorie, double prix, LocalDate dateAchat, String description){
         this.nom = nom;
         this.numSerie = numSerie;
         this.categorie = categorie;
@@ -28,11 +28,11 @@ public class Inventaire {
         this.nom = nom;
     }
 
-    public int getNumSerie(){
+    public String getNumSerie(){
         return this.numSerie;
     }
 
-    public void setNumSerie(int numSerie){
+    public void setNumSerie(String numSerie){
         this.numSerie = numSerie;
     }
 
