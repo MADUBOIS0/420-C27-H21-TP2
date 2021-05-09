@@ -119,7 +119,9 @@ public class View extends JFrame {
 
         //Section boutton d'ajouts
         btnInventairePlus = new JButton("+");
+        btnInventairePlus.addActionListener(e -> btnInventairePlusAction());
         btnInventaireMoins = new JButton("-");
+        btnInventaireMoins.addActionListener(e -> btnInventaireMoinsAction());
 
         btnEntretienPlus = new JButton("+");
         btnEntretienMoins = new JButton("-");
@@ -167,7 +169,6 @@ public class View extends JFrame {
         pnlCentre.add(pnlCentreGauche, BorderLayout.WEST);
         pnlCentre.add(pnlCentreDroit, BorderLayout.CENTER);
 
-
         //Création du panel bas
         JPanel pnlBas = new JPanel(new BorderLayout(5,5));
 
@@ -193,6 +194,16 @@ public class View extends JFrame {
         frame.add(pnlBas, BorderLayout.SOUTH);
 
         frame.setVisible(true);
+    }
+
+    // Affiche le modal pour ajouter des items dans l'inventaire
+    private void btnInventairePlusAction() {
+        ViewAjoutInventaire viewInventaire = new ViewAjoutInventaire();
+    }
+
+    // Supprime un objet de la l'inventaire
+    private void btnInventaireMoinsAction() {
+
     }
 
     //Affiche un pop up avec l'information du projet
