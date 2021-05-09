@@ -1,7 +1,13 @@
 import com.toedter.calendar.JDateChooser;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.text.DecimalFormat;
+import java.time.ZoneId;
+import java.util.Objects;
 
 public class ViewAjoutInventaire extends JDialog {
 
@@ -23,6 +29,8 @@ public class ViewAjoutInventaire extends JDialog {
     JButton btnAjouter; // Bouton pour ajouter l'item à la table d'inventaire
     JButton btnAnnuler; // Bouton pour annuler l'ajout d'item
 
+    Inventaire nouveauObjet = new Inventaire(); // nouvelle objet à ajouter à l'inventaire
+
     public ViewAjoutInventaire(){
 
         //Création des labels
@@ -34,9 +42,30 @@ public class ViewAjoutInventaire extends JDialog {
         lblDescription = new JLabel("Description:");
 
         //Création des textfields
+        UIManager.put("TextField.inactiveBackground", Color.WHITE);
         txfNom = new JTextField();
         txfNoSerie = new JTextField();
         txfPrix = new JTextField();
+        txfPrix.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int numPoint = 0;
+                String currentText = txfPrix.getText() + e.getKeyChar(); //le texte avec la nouvelle valeur appuyé
+                for (int i = 0; i < currentText.length(); i++){
+                    if(currentText.charAt(i) == '.'){
+                        numPoint++;
+                    }
+                }
+                if(((e.getKeyChar() >= '0' && e.getKeyChar() <= '9') || e.getKeyChar() == '.' || e.getKeyChar() == KeyEvent.VK_BACK_SPACE) && numPoint<=1){
+                    txfPrix.setEditable(true);
+                }
+                else{
+                    txfPrix.setEditable(false);
+                    txfPrix.setBorder(new LineBorder(new java.awt.Color(122,138,153))); //Mettre le border la couleur par défaut pour donner impression que le textfield n'est pas disable
+                }
+            }
+        });
+
         txaDescription = new JTextArea();
 
         //Création du combobox
@@ -47,15 +76,16 @@ public class ViewAjoutInventaire extends JDialog {
 
         //Création des boutons
         btnAjouter = new JButton("Ajouter");
+        btnAjouter.addActionListener(e->btnAjouterAction());
         btnAnnuler = new JButton("Annuler");
+        btnAnnuler.addActionListener(e->btnAnnulerAction());
 
         // Création scrollPane pour textArea
         JScrollPane scrollPaneDescription = new JScrollPane(txaDescription);
 
         // Création du modal/frame
         dialog = new JDialog((JDialog)null, "Ajout inventaire", true);
-        dialog.setSize(new Dimension(600,310));
-        dialog.setResizable(false);
+        dialog.setSize(new Dimension(600,350));
         dialog.setLocationRelativeTo(null);
         dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -105,25 +135,37 @@ public class ViewAjoutInventaire extends JDialog {
         mainConstraints.weightx = 0.0;
         mainConstraints.gridx = 0;
         mainConstraints.gridy = 3;
-        pnlInventaire.add(lblDateAchat, mainConstraints);
+        pnlInventaire.add(lblPrix, mainConstraints);
 
         mainConstraints.fill = GridBagConstraints.HORIZONTAL;
         mainConstraints.weightx = 0.5;
         mainConstraints.gridx = 1;
         mainConstraints.gridy = 3;
-        pnlInventaire.add(dateAchat, mainConstraints);
+        pnlInventaire.add(txfPrix, mainConstraints);
 
         mainConstraints.fill = GridBagConstraints.HORIZONTAL;
         mainConstraints.weightx = 0.0;
         mainConstraints.gridx = 0;
         mainConstraints.gridy = 4;
+        pnlInventaire.add(lblDateAchat, mainConstraints);
+
+        mainConstraints.fill = GridBagConstraints.HORIZONTAL;
+        mainConstraints.weightx = 0.5;
+        mainConstraints.gridx = 1;
+        mainConstraints.gridy = 4;
+        pnlInventaire.add(dateAchat, mainConstraints);
+
+        mainConstraints.fill = GridBagConstraints.HORIZONTAL;
+        mainConstraints.weightx = 0.0;
+        mainConstraints.gridx = 0;
+        mainConstraints.gridy = 5;
         pnlInventaire.add(lblDescription, mainConstraints);
 
         mainConstraints.fill = GridBagConstraints.HORIZONTAL;
         mainConstraints.weightx = 0.0;
         mainConstraints.gridwidth = 3;
         mainConstraints.gridx = 1;
-        mainConstraints.gridy = 4;
+        mainConstraints.gridy = 5;
         mainConstraints.ipady = 100;
         pnlInventaire.add(scrollPaneDescription, mainConstraints);
 
@@ -140,6 +182,35 @@ public class ViewAjoutInventaire extends JDialog {
 
         dialog.add(pnlMain);
         dialog.setVisible(true);
+    }
+
+    // Ajoute l'objet à la table inventaire
+    private void btnAjouterAction() {
+
+        DecimalFormat df = new DecimalFormat("#.##"); // pattern pour round deux chiffre après virgule
+
+        if(!txfPrix.getText().equals("") && !txfNom.getText().equals("") && dateAchat.getDate() != null){
+            double prix =  Double.parseDouble(df.format(Double.parseDouble(txfPrix.getText()))); // prix de l'objet arondi en double
+            nouveauObjet.setNom(txfNom.getText());
+            nouveauObjet.setNumSerie(txfNoSerie.getText());
+            nouveauObjet.setCategorie(Objects.requireNonNull(cmbCategorie.getSelectedItem()).toString());
+            nouveauObjet.setPrix(prix);
+            nouveauObjet.setDateAchat(dateAchat.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            nouveauObjet.setDescription(txaDescription.getText());
+
+            dialog.dispose();
+        }
+        else{
+            JOptionPane.showMessageDialog(dialog," Erreur de donnée");
+        }
+    }
+
+    //Ferme le modal
+    private void btnAnnulerAction() {
+    }
+
+    public Inventaire getNouveauObjet(){
+        return nouveauObjet;
     }
 
 }

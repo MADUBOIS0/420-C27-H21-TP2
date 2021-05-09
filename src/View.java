@@ -3,6 +3,7 @@ import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.InputEvent;
+import java.util.ArrayList;
 
 public class View extends JFrame {
     JFrame frame;
@@ -23,18 +24,26 @@ public class View extends JFrame {
     JButton btnEntretienMoins;
     JButton btnQuitter;
 
+    ArrayList<Inventaire> inventaireData = new ArrayList<>();
+
 
     public View(){
 
         //Création de la table d'inventaire
         String[] colNomInventaire = {"Nom", "Catégorie", "Prix", "Date d'achat", "Description"};
-        modelInventaire = new DefaultTableModel(null,colNomInventaire);
+        modelInventaire = new DefaultTableModel(colNomInventaire, 0);
+
+        for(Inventaire objet: inventaireData){
+            modelInventaire.addRow(new Object[] {objet.getNom(), objet.getCategorie(), objet.getPrix(), objet.getDateAchat(), objet.getDescription()});
+        }
         tableInventaire = new JTable(modelInventaire){
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
+        ListSelectionModel selectionModelInventaire = tableInventaire.getSelectionModel();
+        selectionModelInventaire.addListSelectionListener(e -> selectListenerInventaire());
         tableInventaire.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JScrollPane scrollInventaire = new JScrollPane(tableInventaire);
@@ -196,9 +205,20 @@ public class View extends JFrame {
         frame.setVisible(true);
     }
 
+    //TODO
+    private void selectListenerInventaire() {
+        if(tableInventaire.getSelectedRow() != -1){
+            int row = tableInventaire.getSelectedRow();
+        }
+    }
+
     // Affiche le modal pour ajouter des items dans l'inventaire
     private void btnInventairePlusAction() {
         ViewAjoutInventaire viewInventaire = new ViewAjoutInventaire();
+        Inventaire nouvelleObjet = viewInventaire.getNouveauObjet();
+        inventaireData.add(nouvelleObjet);
+        modelInventaire.addRow(new Object[] {nouvelleObjet.getNom(), nouvelleObjet.getCategorie(), nouvelleObjet.getPrix(), nouvelleObjet.getDateAchat(), nouvelleObjet.getDescription()} );
+
     }
 
     // Supprime un objet de la l'inventaire

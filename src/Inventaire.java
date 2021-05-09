@@ -2,15 +2,15 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 
 public class Inventaire {
-    private String nom;
-    private String numSerie;
-    private String categorie;
-    private double prix;
-    private LocalDate dateAchat;
-    private String description;
-    private LinkedHashMap<LocalDate,String> entretiens;
+    private String nom; // Le nom de l'objet
+    private String numSerie; // Numéro de série
+    private String categorie; // Catégorie de l'objet
+    private double prix; // prix de l'objet
+    private LocalDate dateAchat; // Date que l'objet a été acheter
+    private String description; // Description de l'objet
+    private LinkedHashMap<LocalDate,String> entretiens; // Liste des entretiens fait à l'objet
 
-    public Inventaire(String nom, String numSerie, String categorie, double prix, LocalDate dateAchat, String description){
+    /*public Inventaire(String nom, String numSerie, String categorie, double prix, LocalDate dateAchat, String description){
         this.nom = nom;
         this.numSerie = numSerie;
         this.categorie = categorie;
@@ -18,7 +18,7 @@ public class Inventaire {
         this.dateAchat = dateAchat;
         this.description = description;
         this.entretiens = new LinkedHashMap<LocalDate,String>();
-    }
+    }*/
 
     public String getNom(){
         return nom;
@@ -56,7 +56,7 @@ public class Inventaire {
         return this.dateAchat;
     }
 
-    public void setLocalDate(LocalDate date){
+    public void setDateAchat(LocalDate date){
         this.dateAchat = date;
     }
 
