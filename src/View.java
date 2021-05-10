@@ -3,6 +3,8 @@ import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 public class View extends JFrame {
@@ -45,6 +47,32 @@ public class View extends JFrame {
         ListSelectionModel selectionModelInventaire = tableInventaire.getSelectionModel();
         selectionModelInventaire.addListSelectionListener(e -> selectListenerInventaire());
         tableInventaire.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableInventaire.getTableHeader().setReorderingAllowed(false);
+        tableInventaire.getTableHeader().setResizingAllowed(false);
+        tableInventaire.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                JTable table = (JTable) e.getSource();
+                Point point = e.getPoint();
+                int row = table.rowAtPoint(point);
+                int dataRow;
+                if(e.getClickCount() == 2 && table.getSelectedRow() != -1){
+                    for (Inventaire objetInventaire : inventaireData){
+                        if(objetInventaire.getNom().equals(table.getValueAt(row,0)) && objetInventaire.getPrix() == (Double)table.getValueAt(row,2)){
+                            ViewModificationInventaire view = new ViewModificationInventaire(objetInventaire);
+                            if(view.estModifier){
+                                inventaireData.set(inventaireData.indexOf(objetInventaire),view.getObjetModification());
+                                modelInventaire.setValueAt(view.getObjetModification().getNom(),row,0);
+                                modelInventaire.setValueAt(view.getObjetModification().getCategorie(),row,1);
+                                modelInventaire.setValueAt(view.getObjetModification().getPrix(),row,2);
+                                modelInventaire.setValueAt(view.getObjetModification().getDateAchat(),row,3);
+                                modelInventaire.setValueAt(view.getObjetModification().getDescription(),row,4);
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         JScrollPane scrollInventaire = new JScrollPane(tableInventaire);
         scrollInventaire.setPreferredSize(new Dimension(600,300));
@@ -214,16 +242,17 @@ public class View extends JFrame {
 
     // Affiche le modal pour ajouter des items dans l'inventaire
     private void btnInventairePlusAction() {
-        ViewAjoutInventaire viewInventaire = new ViewAjoutInventaire();
-        Inventaire nouvelleObjet = viewInventaire.getNouveauObjet();
-        inventaireData.add(nouvelleObjet);
-        modelInventaire.addRow(new Object[] {nouvelleObjet.getNom(), nouvelleObjet.getCategorie(), nouvelleObjet.getPrix(), nouvelleObjet.getDateAchat(), nouvelleObjet.getDescription()} );
-
+        ViewAjoutInventaire viewInventaire = new ViewAjoutInventaire(); // Création instance du modal
+        Inventaire nouvelleObjet = viewInventaire.getNouveauObjet(); //Objet pour inventaire retourné par le modal
+        if(nouvelleObjet.getNom() != null){
+            inventaireData.add(nouvelleObjet);
+            modelInventaire.addRow(new Object[] {nouvelleObjet.getNom(), nouvelleObjet.getCategorie(), nouvelleObjet.getPrix(), nouvelleObjet.getDateAchat(), nouvelleObjet.getDescription()} );
+        }
     }
 
     // Supprime un objet de la l'inventaire
     private void btnInventaireMoinsAction() {
-
+       // tableInventaire.getSelectedRow();
     }
 
     //Affiche un pop up avec l'information du projet

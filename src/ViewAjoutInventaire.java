@@ -73,6 +73,7 @@ public class ViewAjoutInventaire extends JDialog {
 
         //Création du date picker
         dateAchat = new JDateChooser();
+        dateAchat.setDateFormatString("dd MMM yyyy");
 
         //Création des boutons
         btnAjouter = new JButton("Ajouter");
@@ -86,6 +87,7 @@ public class ViewAjoutInventaire extends JDialog {
         // Création du modal/frame
         dialog = new JDialog((JDialog)null, "Ajout inventaire", true);
         dialog.setSize(new Dimension(600,350));
+        dialog.setResizable(false);
         dialog.setLocationRelativeTo(null);
         dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -207,8 +209,10 @@ public class ViewAjoutInventaire extends JDialog {
 
     //Ferme le modal
     private void btnAnnulerAction() {
+        dialog.dispose();
     }
 
+    //Retourne le nouvel objet à ajouter à l'inventaire
     public Inventaire getNouveauObjet(){
         return nouveauObjet;
     }
