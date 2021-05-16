@@ -87,6 +87,7 @@ public class ViewModificationInventaire extends JDialog {
         btnAnnuler = new JButton("Annuler");
         btnAnnuler.addActionListener(e->btnAnnulerAction());
 
+        //region Interface
         // Création scrollPane pour textArea
         JScrollPane scrollPaneDescription = new JScrollPane(txaDescription);
 
@@ -190,6 +191,7 @@ public class ViewModificationInventaire extends JDialog {
 
         dialog.add(pnlMain);
         dialog.setVisible(true);
+        //endregion
     }
 
     // Ajoute l'objet à la table inventaire
@@ -199,6 +201,7 @@ public class ViewModificationInventaire extends JDialog {
 
         if(!txfPrix.getText().equals("") && !txfNom.getText().equals("") && dateAchat.getDate() != null){
             double prix =  Double.parseDouble(df.format(Double.parseDouble(txfPrix.getText()))); // prix de l'objet arondi en double
+
             objetModifier.setNom(txfNom.getText());
             objetModifier.setNumSerie(txfNoSerie.getText());
             objetModifier.setCategorie(Objects.requireNonNull(cmbCategorie.getSelectedItem()).toString());

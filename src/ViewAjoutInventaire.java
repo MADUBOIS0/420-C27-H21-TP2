@@ -193,6 +193,7 @@ public class ViewAjoutInventaire extends JDialog {
 
         if(!txfPrix.getText().equals("") && !txfNom.getText().equals("") && dateAchat.getDate() != null){
             double prix =  Double.parseDouble(df.format(Double.parseDouble(txfPrix.getText()))); // prix de l'objet arondi en double
+
             nouveauObjet.setNom(txfNom.getText());
             nouveauObjet.setNumSerie(txfNoSerie.getText());
             nouveauObjet.setCategorie(Objects.requireNonNull(cmbCategorie.getSelectedItem()).toString());

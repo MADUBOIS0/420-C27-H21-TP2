@@ -8,7 +8,7 @@ public class Inventaire {
     private double prix; // prix de l'objet
     private LocalDate dateAchat; // Date que l'objet a été acheter
     private String description; // Description de l'objet
-    private LinkedHashMap<LocalDate,String> entretiens; // Liste des entretiens fait à l'objet
+    private LinkedHashMap<LocalDate,String> entretiens = new LinkedHashMap<>(); // Liste des entretiens fait à l'objet
 
     /*public Inventaire(String nom, String numSerie, String categorie, double prix, LocalDate dateAchat, String description){
         this.nom = nom;
@@ -66,6 +66,10 @@ public class Inventaire {
 
     public void setDescription(String description){
         this.description = description;
+    }
+
+    public LinkedHashMap<LocalDate, String> getEntretien(){
+        return this.entretiens;
     }
 
     public void addEntretien(LocalDate dateEntretien, String description){
