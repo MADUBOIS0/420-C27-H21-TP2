@@ -10,16 +10,6 @@ public class Inventaire {
     private String description; // Description de l'objet
     private LinkedHashMap<LocalDate,String> entretiens = new LinkedHashMap<>(); // Liste des entretiens fait à l'objet
 
-    /*public Inventaire(String nom, String numSerie, String categorie, double prix, LocalDate dateAchat, String description){
-        this.nom = nom;
-        this.numSerie = numSerie;
-        this.categorie = categorie;
-        this.prix = prix;
-        this.dateAchat = dateAchat;
-        this.description = description;
-        this.entretiens = new LinkedHashMap<LocalDate,String>();
-    }*/
-
     public String getNom(){
         return nom;
     }

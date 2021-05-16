@@ -1,8 +1,11 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.regex.PatternSyntaxException;
 
 public class View extends JFrame {
     JFrame frame;
@@ -40,16 +43,18 @@ public class View extends JFrame {
                 return false;
             }
         };
-        ListSelectionModel selectionModelInventaire = tableInventaire.getSelectionModel();
         tableInventaire.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableInventaire.getTableHeader().setReorderingAllowed(false);
         tableInventaire.getTableHeader().setResizingAllowed(false);
+        tableInventaire.setAutoCreateRowSorter(true);
+        TableRowSorter<DefaultTableModel> sorterInventaire = new TableRowSorter<>(modelInventaire);
+        tableInventaire.setRowSorter(sorterInventaire);
         tableInventaire.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 Point point = e.getPoint();
-                int row = tableInventaire.rowAtPoint(point);
                 if(e.getClickCount() == 2 && tableInventaire.getSelectedRow() != -1){
+                    int row = tableInventaire.rowAtPoint(point);
                     if(getInventairePosition(row) != -1){
                         Inventaire objetModification = inventaireData.get(getInventairePosition(row));
                         ViewModificationInventaire view = new ViewModificationInventaire(objetModification);
@@ -66,7 +71,7 @@ public class View extends JFrame {
             }
         });
         tableInventaire.getSelectionModel().addListSelectionListener(e -> {
-            if(e.getValueIsAdjusting()){
+            if(e.getValueIsAdjusting() && tableInventaire.getSelectedRow() != -1){
                 actualiserTableauEntretien();
             }
         });
@@ -83,7 +88,7 @@ public class View extends JFrame {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN){
+                if((e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN) && tableInventaire.getSelectedRow() != -1 ){
                     actualiserTableauEntretien();
                 }
             }
@@ -102,9 +107,14 @@ public class View extends JFrame {
             }
         };
         tableEntretien.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableEntretien.getTableHeader().setReorderingAllowed(false);
+        tableEntretien.getTableHeader().setResizingAllowed(false);
 
         JScrollPane scrollEntretien = new JScrollPane(tableEntretien);
         scrollEntretien.setPreferredSize(new Dimension(300,300));
+        tableEntretien.getColumnModel().getColumn(0).setPreferredWidth(10);
+        tableEntretien.getColumnModel().getColumn(1).setPreferredWidth(100);
+
 
         //Création de la barre du menu
         menuBar = new JMenuBar();
@@ -168,9 +178,27 @@ public class View extends JFrame {
         txfFiltrer.setPreferredSize(new Dimension(200,20));
 
         btnFiltrer = new JButton("Filtrer");
+        btnFiltrer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
 
-        //Section boutton d'ajouts
-        btnInventairePlus = new JButton("+");
+                String filtreTexte = txfFiltrer.getText();
+                if(filtreTexte.length() == 0){
+                    sorterInventaire.setRowFilter(null);
+                }
+                else{
+                    try{
+                        sorterInventaire.setRowFilter(RowFilter.regexFilter(filtreTexte));
+                        tableInventaire.getSelectionModel().clearSelection();
+                    }catch(PatternSyntaxException pse){
+                        JOptionPane.showMessageDialog(null, "Erreur de filtre");
+                    }
+                }
+            }
+        });
+
+                //Section boutton d'ajouts
+                btnInventairePlus = new JButton("+");
         btnInventairePlus.addActionListener(e -> btnInventairePlusAction());
         btnInventaireMoins = new JButton("-");
         btnInventaireMoins.addActionListener(e -> btnInventaireMoinsAction());
@@ -253,8 +281,9 @@ public class View extends JFrame {
         //endregion
     }
 
+
     private void btnEntretienPlusAction() {
-        if(!tableInventaire.getSelectionModel().isSelectionEmpty()){
+        if(tableInventaire.getSelectedRow() != -1){
             ViewAjoutEntretien viewEntretien = new ViewAjoutEntretien();
             if(viewEntretien.getEntretienEstValide()){
                 int positionInventaire = getInventairePosition(tableInventaire.getSelectedRow()); // Position de l'objet sélectionné du tableau inventaire dans inventaireData
@@ -270,8 +299,7 @@ public class View extends JFrame {
     }
 
     private void actualiserTableauEntretien(){
-        modelEntretien.getDataVector().removeAllElements();
-
+        modelEntretien.setRowCount(0);
         inventaireData.get(getInventairePosition(tableInventaire.getSelectedRow())).getEntretien().forEach((key, value)->
                 modelEntretien.addRow(new Object[] {key, value}
                 ));
@@ -279,8 +307,10 @@ public class View extends JFrame {
 
     private void btnEntretienMoinsAction() {
 
-
-        if(!tableInventaire.getSelectionModel().isSelectionEmpty()){
+        if(getInventairePosition(tableInventaire.getSelectedRow()) != -1){
+            LocalDate dateEntretien = (LocalDate)modelEntretien.getValueAt(tableEntretien.getSelectedRow(), 0);
+            inventaireData.get(getInventairePosition(tableInventaire.getSelectedRow())).getEntretien().remove(dateEntretien);
+            modelEntretien.removeRow(tableEntretien.getSelectedRow());
 
         }
     }
@@ -297,6 +327,7 @@ public class View extends JFrame {
 
     // Supprime un objet de la l'inventaire
     private void btnInventaireMoinsAction() {
+
         if(getInventairePosition(tableInventaire.getSelectedRow()) != -1){inventaireData.remove(getInventairePosition(tableInventaire.getSelectedRow()));}
         modelInventaire.removeRow(tableInventaire.getSelectedRow());
     }
@@ -307,13 +338,15 @@ public class View extends JFrame {
      * @return position de l'objet dans l'array d'inventaire, retourne -1 si l'objet n'existe pas
      */
     private int getInventairePosition(int row){
-        for (Inventaire objetInventaire : inventaireData){
-            // Verifier si le nom,prix et date son pareil dans le tableInventaire et l'array inventaire.
-            if(
-                    objetInventaire.getNom().equals(tableInventaire.getValueAt(row,0)) &&
-                    objetInventaire.getPrix() == (Double)tableInventaire.getValueAt(row,2) &&
-                    objetInventaire.getDateAchat().equals(tableInventaire.getValueAt(row,3))) {
-                return inventaireData.indexOf(objetInventaire);
+        if(row != -1){
+            for (Inventaire objetInventaire : inventaireData){
+                // Verifier si le nom,prix et date son pareil dans le tableInventaire et l'array inventaire.
+                if(
+                        objetInventaire.getNom().equals(tableInventaire.getValueAt(row,0)) &&
+                                objetInventaire.getPrix() == (Double)tableInventaire.getValueAt(row,2) &&
+                                objetInventaire.getDateAchat().equals(tableInventaire.getValueAt(row,3))) {
+                    return inventaireData.indexOf(objetInventaire);
+                }
             }
         }
         return -1;
