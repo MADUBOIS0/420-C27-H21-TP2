@@ -1,8 +1,10 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.regex.PatternSyntaxException;
@@ -26,9 +28,18 @@ public class View extends JFrame {
     JButton btnEntretienMoins;
     JButton btnQuitter;
 
+    JFileChooser fc = new JFileChooser();
+    File fichierInventaire;
+    String nomFichier;
+    String cheminFichier;
+
     ArrayList<Inventaire> inventaireData = new ArrayList<>();
 
     public View(){
+
+        //Création du filechooser
+        fc.setFileFilter(new FileNameExtensionFilter("*.dat", "dat"));
+        fc.setAcceptAllFileFilterUsed(false);
 
         //Création de la table d'inventaire
         String[] colNomInventaire = {"Nom", "Catégorie", "Prix", "Date d'achat", "Description"};
@@ -191,7 +202,7 @@ public class View extends JFrame {
                         sorterInventaire.setRowFilter(RowFilter.regexFilter(filtreTexte));
                         tableInventaire.getSelectionModel().clearSelection();
                     }catch(PatternSyntaxException pse){
-                        JOptionPane.showMessageDialog(null, "Erreur de filtre");
+                        JOptionPane.showMessageDialog(frame, "Erreur de filtre");
                     }
                 }
             }
@@ -306,28 +317,27 @@ public class View extends JFrame {
     }
 
     private void btnEntretienMoinsAction() {
-
         if(getInventairePosition(tableInventaire.getSelectedRow()) != -1){
             LocalDate dateEntretien = (LocalDate)modelEntretien.getValueAt(tableEntretien.getSelectedRow(), 0);
             inventaireData.get(getInventairePosition(tableInventaire.getSelectedRow())).getEntretien().remove(dateEntretien);
             modelEntretien.removeRow(tableEntretien.getSelectedRow());
-
         }
     }
 
     // Affiche le modal pour ajouter des items dans l'inventaire
     private void btnInventairePlusAction() {
-        ViewAjoutInventaire viewInventaire = new ViewAjoutInventaire(); // Création instance du modal
-        Inventaire nouvelleObjet = viewInventaire.getNouveauObjet(); //Objet pour inventaire retourné par le modal
-        if(nouvelleObjet.getNom() != null){
-            inventaireData.add(nouvelleObjet);
-            modelInventaire.addRow(new Object[] {nouvelleObjet.getNom(), nouvelleObjet.getCategorie(), nouvelleObjet.getPrix(), nouvelleObjet.getDateAchat(), nouvelleObjet.getDescription()} );
+        if(nomFichier != null){
+            ViewAjoutInventaire viewInventaire = new ViewAjoutInventaire(); // Création instance du modal
+            Inventaire nouvelleObjet = viewInventaire.getNouveauObjet(); //Objet pour inventaire retourné par le modal
+            if(nouvelleObjet.getNom() != null){
+                inventaireData.add(nouvelleObjet);
+                modelInventaire.addRow(new Object[] {nouvelleObjet.getNom(), nouvelleObjet.getCategorie(), nouvelleObjet.getPrix(), nouvelleObjet.getDateAchat(), nouvelleObjet.getDescription()} );
+            }
         }
     }
 
     // Supprime un objet de la l'inventaire
     private void btnInventaireMoinsAction() {
-
         if(getInventairePosition(tableInventaire.getSelectedRow()) != -1){inventaireData.remove(getInventairePosition(tableInventaire.getSelectedRow()));}
         modelInventaire.removeRow(tableInventaire.getSelectedRow());
     }
@@ -371,16 +381,52 @@ public class View extends JFrame {
         }
     }
 
-    private void miNouveauAction() {
+    private void miNouveauAction(){
+
+        fc.setDialogTitle("Nouveau inventaire");
+        int reponse = fc.showSaveDialog(frame);
+        if(reponse == JFileChooser.APPROVE_OPTION){
+
+            if(!fc.getSelectedFile().getPath().endsWith("dat")){
+                fichierInventaire = new File(fc.getSelectedFile()+".dat");
+            }
+            else{
+                fichierInventaire = fc.getSelectedFile();
+            }
+
+            nomFichier = fichierInventaire.getName();
+            cheminFichier = fichierInventaire.getPath();
+
+            try{
+                fichierInventaire.createNewFile();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+            frame.setTitle(nomFichier + " Marc-Antoine Dubois + 1909082" );
+        }
     }
 
     private void miOuvrirAction() {
+        fc.setDialogTitle("Ouvrir inventaire");
+        int reponse = fc.showOpenDialog(frame);
+        if(reponse == JFileChooser.APPROVE_OPTION){
+            fichierInventaire = fc.getSelectedFile();
+            nomFichier = fichierInventaire.getName();
+            cheminFichier = fichierInventaire.getPath();
+            frame.setTitle(nomFichier + " Marc-Antoine Dubois + 1909082" );
+        }
     }
 
     private void miFermerAction() {
     }
 
     private void miEnregistrerAction() {
+        if(nomFichier != null){
+
+        }
+        else{
+            JOptionPane.showMessageDialog(frame, "Erreur de filtre");
+        }
     }
 
     private void miEnregistrerSousAction() {
@@ -390,7 +436,7 @@ public class View extends JFrame {
     }
 
     private void btnQuitterAction() {
-        // A CHANGER
+        //TODO
         frame.dispose();
     }
 
