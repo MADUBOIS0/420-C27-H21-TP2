@@ -61,20 +61,12 @@ public class View extends JFrame {
         tableInventaire.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                Point point = e.getPoint();
                 if(e.getClickCount() == 2 && tableInventaire.getSelectedRow() != -1){
-                    int row = tableInventaire.rowAtPoint(point);
-                    if(getInventairePosition(row) != -1){
-                        Inventaire objetModification = inventaireData.get(getInventairePosition(row));
-                        ViewModificationInventaire view = new ViewModificationInventaire(objetModification);
-                        if(view.estModifier){
-                            inventaireData.set(inventaireData.indexOf(objetModification),view.getObjetModification());
-                            modelInventaire.setValueAt(view.getObjetModification().getNom(),row,0);
-                            modelInventaire.setValueAt(view.getObjetModification().getCategorie(),row,1);
-                            modelInventaire.setValueAt(view.getObjetModification().getPrix(),row,2);
-                            modelInventaire.setValueAt(view.getObjetModification().getDateAchat(),row,3);
-                            modelInventaire.setValueAt(view.getObjetModification().getDescription(),row,4);
-                        }
+                    int row = tableInventaire.getSelectedRow();
+                    Inventaire objetModification = inventaireData.get(getInventairePosition(row));
+                    ViewModificationInventaire view = new ViewModificationInventaire(objetModification);
+                    if(view.estModifier){
+                        actualiserTableauInventaire();
                     }
                 }
             }
@@ -365,12 +357,13 @@ public class View extends JFrame {
 
     // Affiche le modal pour ajouter des items dans l'inventaire
     private void btnInventairePlusAction() {
-        if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || fichierInventaire != null && fichierInventaire.length() == 0){
+        if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || (fichierInventaire != null && fichierInventaire.length() == 0)){
             ViewAjoutInventaire viewInventaire = new ViewAjoutInventaire(); // Création instance du modal
             Inventaire nouvelleObjet = viewInventaire.getNouveauObjet(); //Objet pour inventaire retourné par le modal
             if(nouvelleObjet.getNom() != null){
                 inventaireData.add(nouvelleObjet);
-                modelInventaire.addRow(new Object[] {nouvelleObjet.getNom(), nouvelleObjet.getCategorie(), nouvelleObjet.getPrix(), nouvelleObjet.getDateAchat(), nouvelleObjet.getDescription()} );
+                modelInventaire.addRow(new Object[] {nouvelleObjet.getNom(), nouvelleObjet.getCategorie(), nouvelleObjet.getPrix(), nouvelleObjet.getDateAchat(), nouvelleObjet.getDescription()});
+              (tableInventaire.getSelectionModel()).setSelectionInterval(modelInventaire.getRowCount()-1, modelInventaire.getRowCount()-1);
             }
         }
     }
@@ -414,15 +407,42 @@ public class View extends JFrame {
 
     // Affiche un pop up qui demande à l'utilisateur s'il veut quitter le programme
     private void miQuitterAction() {
+        fermerProgramme();
+    }
+
+    private void fermerProgramme(){
         int result = JOptionPane.showConfirmDialog(frame, "Voulez-vous vraiment quitter?", "Confirmation",
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
         if(result == JOptionPane.YES_OPTION){
+            if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || (fichierInventaire != null && fichierInventaire.length() == 0)) {
+
+                int resultSave = JOptionPane.showConfirmDialog(frame, "Voulez-vous sauvegarder l'inventaire actuel avant de le fermer?", "Sauvegarde",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.PLAIN_MESSAGE);
+                if (resultSave == JOptionPane.YES_OPTION || resultSave == JOptionPane.NO_OPTION) {
+                    if (resultSave == JOptionPane.YES_OPTION) {
+                        sauvegarderInventaireData();
+                    }
+                }
+            }
             frame.dispose();
         }
     }
 
     private void miNouveauAction(){
+
+        if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || (fichierInventaire != null && fichierInventaire.length() == 0)){
+            int result = JOptionPane.showConfirmDialog(frame, "Voulez-vous sauvegarder l'inventaire actuel avant de le fermer?", "Sauvegarde",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE);
+            if(result == JOptionPane.YES_OPTION){
+                sauvegarderInventaireData();
+            }
+            else if(result == JOptionPane.CANCEL_OPTION){
+                return;
+            }
+        }
 
         fc.setDialogTitle("Nouveau inventaire");
         int reponse = fc.showSaveDialog(frame);
@@ -431,9 +451,8 @@ public class View extends JFrame {
             if(!fc.getSelectedFile().getPath().endsWith("dat")){
                 fichierInventaire = new File(fc.getSelectedFile()+".dat");
             }
-            else{
-                fichierInventaire = fc.getSelectedFile();
-            }
+            else{ fichierInventaire = fc.getSelectedFile(); }
+
             try{
                 fichierInventaire.createNewFile();
             }catch(IOException e){
@@ -441,31 +460,55 @@ public class View extends JFrame {
             }
             actualiserInventaireData();
             actualiserTableauInventaire();
-            frame.setTitle(fichierInventaire.getName() + " Marc-Antoine Dubois + 1909082" );
+            frame.setTitle(fichierInventaire.getName() + " Marc-Antoine Dubois + 1909082");
         }
     }
 
     private void miOuvrirAction() {
-        fc.setDialogTitle("Ouvrir inventaire");
+
+        if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || (fichierInventaire != null && fichierInventaire.length() == 0)){
+            int result = JOptionPane.showConfirmDialog(frame, "Voulez-vous sauvegarder l'inventaire actuel avant de le fermer?", "Sauvegarde",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE);
+            if(result == JOptionPane.YES_OPTION){
+                sauvegarderInventaireData();
+            }
+            else if(result == JOptionPane.CANCEL_OPTION){
+                return;
+            }
+        }
+
+        fc.setDialogTitle("Ouverture inventaire");
         int reponse = fc.showOpenDialog(frame);
         if(reponse == JFileChooser.APPROVE_OPTION && fc.getSelectedFile().getName().endsWith("dat")){
             fichierInventaire = fc.getSelectedFile();
-            frame.setTitle(fichierInventaire.getName() + " Marc-Antoine Dubois + 1909082" );
+            frame.setTitle(fichierInventaire.getName() + " Marc-Antoine Dubois + 1909082");
             actualiserInventaireData();
             actualiserTableauInventaire();
         }
     }
 
     private void miFermerAction() {
-        modelInventaire.setRowCount(0);
-        modelEntretien.setRowCount(0);
-        inventaireData.clear();
-        fichierInventaire = null;
-        frame.setTitle("Marc-Antoine Dubois + 1909082" );
+        if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || (fichierInventaire != null && fichierInventaire.length() == 0)){
+            int result = JOptionPane.showConfirmDialog(frame, "Voulez-vous sauvegarder l'inventaire actuel avant de le fermer?", "Sauvegarde",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE);
+            if(result == JOptionPane.YES_OPTION || result == JOptionPane.NO_OPTION){
+                if(result == JOptionPane.YES_OPTION){ sauvegarderInventaireData();}
+                modelInventaire.setRowCount(0);
+                modelEntretien.setRowCount(0);
+                inventaireData.clear();
+                fichierInventaire = null;
+                frame.setTitle("Marc-Antoine Dubois + 1909082");
+            }
+        }
+        else{
+            JOptionPane.showMessageDialog(frame, "Aucun inventaire ouvert");
+        }
     }
 
     private void miEnregistrerAction() {
-        if(fichierInventaire != null && !fichierInventaire.getName().equals("") || fichierInventaire != null && fichierInventaire.length() == 0){
+        if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || (fichierInventaire != null && fichierInventaire.length() == 0)){
             sauvegarderInventaireData();
         }
         else{
@@ -474,14 +517,74 @@ public class View extends JFrame {
     }
 
     private void miEnregistrerSousAction() {
+        if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || (fichierInventaire != null && fichierInventaire.length() == 0)){
+            fc.setDialogTitle("Enregistrer inventaire");
+            int reponse = fc.showSaveDialog(frame);
+
+            if(reponse == JFileChooser.APPROVE_OPTION){
+                if(!fc.getSelectedFile().getPath().endsWith("dat")){
+                    fichierInventaire = new File(fc.getSelectedFile()+".dat");
+                }
+                else{ fichierInventaire = fc.getSelectedFile();}
+
+                try{
+                    fichierInventaire.createNewFile();
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+                sauvegarderInventaireData();
+                frame.setTitle(fichierInventaire.getName() + " Marc-Antoine Dubois + 1909082");
+             }
+        }
+        else {
+            JOptionPane.showMessageDialog(frame, "Aucun inventaire ouvert");
+        }
     }
 
     private void miExporterAction() {
+
+        if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || (fichierInventaire != null && fichierInventaire.length() == 0)){
+            fc.resetChoosableFileFilters();
+            fc.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
+            fc.setDialogTitle("Enregistrer inventaire");
+            int reponse = fc.showSaveDialog(frame);
+
+            if(reponse == JFileChooser.APPROVE_OPTION){
+                if(!fc.getSelectedFile().getPath().endsWith("txt")){
+                    fichierInventaire = new File(fc.getSelectedFile()+".txt");
+                }
+                else{ fichierInventaire = fc.getSelectedFile();}
+
+                String text = ""; // Le contenu du fichier à exporter
+                for(Inventaire objet : inventaireData){
+
+                    text = text.concat("\n" + objet.getNom() + ", " + objet.getNumSerie() + ", " + objet.getCategorie() + ", " + objet.getPrix() + ", " + objet.getDateAchat() + ", " + objet.getDescription());
+
+                    for (LocalDate key : objet.getEntretien().keySet()){
+                        text = text.concat("\n" + key + ", " + objet.getEntretien().get(key));
+                    }
+                    text = text.concat("\n");
+                }
+
+                try{
+                    fichierInventaire.createNewFile();
+                    FileWriter fw = new FileWriter(fichierInventaire.getPath());
+                    fw.write(text);
+                    fw.close();
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+            }
+            fc.resetChoosableFileFilters();
+            fc.setFileFilter(new FileNameExtensionFilter("*.dat", "dat"));
+        }
+        else {
+            JOptionPane.showMessageDialog(frame, "Aucun inventaire ouvert");
+        }
     }
 
     private void btnQuitterAction() {
-        //TODO
-        frame.dispose();
+        fermerProgramme();
     }
 
     public static void main(String[] args) {
