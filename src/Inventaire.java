@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 
-public class Inventaire {
+public class Inventaire implements Serializable {
     private String nom; // Le nom de l'objet
     private String numSerie; // Numéro de série
     private String categorie; // Catégorie de l'objet

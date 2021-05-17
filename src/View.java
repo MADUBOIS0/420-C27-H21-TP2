@@ -30,8 +30,6 @@ public class View extends JFrame {
 
     JFileChooser fc = new JFileChooser();
     File fichierInventaire;
-    String nomFichier;
-    String cheminFichier;
 
     ArrayList<Inventaire> inventaireData = new ArrayList<>();
 
@@ -208,8 +206,8 @@ public class View extends JFrame {
             }
         });
 
-                //Section boutton d'ajouts
-                btnInventairePlus = new JButton("+");
+        //Section boutton d'ajouts
+        btnInventairePlus = new JButton("+");
         btnInventairePlus.addActionListener(e -> btnInventairePlusAction());
         btnInventaireMoins = new JButton("-");
         btnInventaireMoins.addActionListener(e -> btnInventaireMoinsAction());
@@ -272,7 +270,7 @@ public class View extends JFrame {
         pnlBas.add(pnlBasDroit, BorderLayout.SOUTH);
 
         //Création du frame
-        frame = new JFrame("Marc-Antoine Dubois - 1909082");
+        frame = new JFrame("Marc-Antoine Dubois + 1909082");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(950,800);
         frame.setLocationRelativeTo(null);
@@ -316,8 +314,49 @@ public class View extends JFrame {
                 ));
     }
 
+    private void actualiserTableauInventaire(){
+        modelInventaire.setRowCount(0);
+        modelEntretien.setRowCount(0);
+        for(Inventaire objet: inventaireData){
+            modelInventaire.addRow(new Object[] {objet.getNom(), objet.getCategorie(), objet.getPrix(), objet.getDateAchat(), objet.getDescription()});
+        }
+    }
+
+    private void actualiserInventaireData(){
+        try{
+            if(fichierInventaire.length() != 0){
+                FileInputStream fis = new FileInputStream(fichierInventaire.getPath());
+                ObjectInputStream ois = new ObjectInputStream(fis);
+
+                inventaireData = (ArrayList<Inventaire>) ois.readObject();
+                ois.close();
+                fis.close();
+            }
+            else{
+                modelInventaire.setRowCount(0);
+                modelEntretien.setRowCount(0);
+                inventaireData.clear();
+            }
+        }catch(IOException | ClassNotFoundException | ClassCastException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void sauvegarderInventaireData(){
+        try {
+            FileOutputStream fos = new FileOutputStream(fichierInventaire.getPath());
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(inventaireData);
+            oos.close();
+            fos.close();
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     private void btnEntretienMoinsAction() {
-        if(getInventairePosition(tableInventaire.getSelectedRow()) != -1){
+        if(getInventairePosition(tableInventaire.getSelectedRow()) != -1 && tableEntretien.getSelectedRow() != -1){
             LocalDate dateEntretien = (LocalDate)modelEntretien.getValueAt(tableEntretien.getSelectedRow(), 0);
             inventaireData.get(getInventairePosition(tableInventaire.getSelectedRow())).getEntretien().remove(dateEntretien);
             modelEntretien.removeRow(tableEntretien.getSelectedRow());
@@ -326,7 +365,7 @@ public class View extends JFrame {
 
     // Affiche le modal pour ajouter des items dans l'inventaire
     private void btnInventairePlusAction() {
-        if(nomFichier != null){
+        if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || fichierInventaire != null && fichierInventaire.length() == 0){
             ViewAjoutInventaire viewInventaire = new ViewAjoutInventaire(); // Création instance du modal
             Inventaire nouvelleObjet = viewInventaire.getNouveauObjet(); //Objet pour inventaire retourné par le modal
             if(nouvelleObjet.getNom() != null){
@@ -338,8 +377,10 @@ public class View extends JFrame {
 
     // Supprime un objet de la l'inventaire
     private void btnInventaireMoinsAction() {
-        if(getInventairePosition(tableInventaire.getSelectedRow()) != -1){inventaireData.remove(getInventairePosition(tableInventaire.getSelectedRow()));}
-        modelInventaire.removeRow(tableInventaire.getSelectedRow());
+        if(tableInventaire.getSelectedRow() != -1){
+            if(getInventairePosition(tableInventaire.getSelectedRow()) != -1){inventaireData.remove(getInventairePosition(tableInventaire.getSelectedRow()));}
+            modelInventaire.removeRow(tableInventaire.getSelectedRow());
+        }
     }
 
     /**
@@ -393,39 +434,42 @@ public class View extends JFrame {
             else{
                 fichierInventaire = fc.getSelectedFile();
             }
-
-            nomFichier = fichierInventaire.getName();
-            cheminFichier = fichierInventaire.getPath();
-
             try{
                 fichierInventaire.createNewFile();
             }catch(IOException e){
                 e.printStackTrace();
             }
-            frame.setTitle(nomFichier + " Marc-Antoine Dubois + 1909082" );
+            actualiserInventaireData();
+            actualiserTableauInventaire();
+            frame.setTitle(fichierInventaire.getName() + " Marc-Antoine Dubois + 1909082" );
         }
     }
 
     private void miOuvrirAction() {
         fc.setDialogTitle("Ouvrir inventaire");
         int reponse = fc.showOpenDialog(frame);
-        if(reponse == JFileChooser.APPROVE_OPTION){
+        if(reponse == JFileChooser.APPROVE_OPTION && fc.getSelectedFile().getName().endsWith("dat")){
             fichierInventaire = fc.getSelectedFile();
-            nomFichier = fichierInventaire.getName();
-            cheminFichier = fichierInventaire.getPath();
-            frame.setTitle(nomFichier + " Marc-Antoine Dubois + 1909082" );
+            frame.setTitle(fichierInventaire.getName() + " Marc-Antoine Dubois + 1909082" );
+            actualiserInventaireData();
+            actualiserTableauInventaire();
         }
     }
 
     private void miFermerAction() {
+        modelInventaire.setRowCount(0);
+        modelEntretien.setRowCount(0);
+        inventaireData.clear();
+        fichierInventaire = null;
+        frame.setTitle("Marc-Antoine Dubois + 1909082" );
     }
 
     private void miEnregistrerAction() {
-        if(nomFichier != null){
-
+        if(fichierInventaire != null && !fichierInventaire.getName().equals("") || fichierInventaire != null && fichierInventaire.length() == 0){
+            sauvegarderInventaireData();
         }
         else{
-            JOptionPane.showMessageDialog(frame, "Erreur de filtre");
+            JOptionPane.showMessageDialog(frame, "Aucun inventaire ouvert");
         }
     }
 
