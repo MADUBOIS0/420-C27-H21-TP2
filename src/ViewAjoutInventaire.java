@@ -1,3 +1,9 @@
+/*
+Objectif: Modal qui sert à ajouter un objet à l'inventaire
+  Auteur: Marc-Antoine Dubois
+  Date: 2021-05-17 Session H2021
+ */
+
 import com.toedter.calendar.JDateChooser;
 
 import javax.swing.*;
@@ -11,7 +17,7 @@ import java.util.Objects;
 
 public class ViewAjoutInventaire extends JDialog {
 
-    JDialog dialog; //Frame du modal
+    JDialog dialog; //Interface du modal
 
     JLabel lblNom; //Label du nom
     JLabel lblnumSerie; //Label du numéro de serie
@@ -28,6 +34,7 @@ public class ViewAjoutInventaire extends JDialog {
 
     JButton btnAjouter; // Bouton pour ajouter l'item à la table d'inventaire
     JButton btnAnnuler; // Bouton pour annuler l'ajout d'item
+    JScrollPane scrollPaneDescription; //Scrollpane pour scroll dans le texte de la description
 
     Inventaire nouveauObjet = new Inventaire(); // nouvelle objet à ajouter à l'inventaire
 
@@ -61,7 +68,8 @@ public class ViewAjoutInventaire extends JDialog {
                 }
                 else{
                     txfPrix.setEditable(false);
-                    txfPrix.setBorder(new LineBorder(new java.awt.Color(122,138,153))); //Mettre le border la couleur par défaut pour donner impression que le textfield n'est pas disable
+                    //Mettre le border la couleur par défaut pour donner impression que le textfield n'est pas disabled
+                    txfPrix.setBorder(new LineBorder(new java.awt.Color(122,138,153)));
                 }
             }
         });
@@ -82,8 +90,55 @@ public class ViewAjoutInventaire extends JDialog {
         btnAnnuler.addActionListener(e->btnAnnulerAction());
 
         // Création scrollPane pour textArea
-        JScrollPane scrollPaneDescription = new JScrollPane(txaDescription);
+        scrollPaneDescription = new JScrollPane(txaDescription);
 
+        //Création interface
+        initialiserInterface();
+    }
+
+    /**
+     * Création d'un nouvel objet de type Inventaire
+     */
+    private void btnAjouterAction() {
+
+        DecimalFormat df = new DecimalFormat("#.##"); // pattern pour round deux chiffre après virgule
+
+        if(!txfPrix.getText().equals("") && !txfNom.getText().equals("") && dateAchat.getDate() != null){
+            double prix =  Double.parseDouble(df.format(Double.parseDouble(txfPrix.getText()))); // prix de l'objet arondi en double
+
+            nouveauObjet.setNom(txfNom.getText());
+            nouveauObjet.setNumSerie(txfNoSerie.getText());
+            nouveauObjet.setCategorie(Objects.requireNonNull(cmbCategorie.getSelectedItem()).toString());
+            nouveauObjet.setPrix(prix);
+            nouveauObjet.setDateAchat(dateAchat.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            nouveauObjet.setDescription(txaDescription.getText());
+
+            dialog.dispose();
+        }
+        else{
+            JOptionPane.showMessageDialog(dialog," Erreur de donnée");
+        }
+    }
+
+    /**
+     * Ferme le modal
+     */
+    private void btnAnnulerAction() {
+        dialog.dispose();
+    }
+
+    /**
+     * Retourne l'objet qui vient d'être créer
+     * @return Objet de type Inventaire
+     */
+    public Inventaire getNouveauObjet(){
+        return nouveauObjet;
+    }
+
+    /**
+     * Initialise l'interface
+     */
+    private void initialiserInterface(){
         // Création du modal/frame
         dialog = new JDialog((JDialog)null, "Ajout inventaire", true);
         dialog.setSize(new Dimension(600,350));
@@ -184,38 +239,6 @@ public class ViewAjoutInventaire extends JDialog {
 
         dialog.add(pnlMain);
         dialog.setVisible(true);
-    }
-
-    // Ajoute l'objet à la table inventaire
-    private void btnAjouterAction() {
-
-        DecimalFormat df = new DecimalFormat("#.##"); // pattern pour round deux chiffre après virgule
-
-        if(!txfPrix.getText().equals("") && !txfNom.getText().equals("") && dateAchat.getDate() != null){
-            double prix =  Double.parseDouble(df.format(Double.parseDouble(txfPrix.getText()))); // prix de l'objet arondi en double
-
-            nouveauObjet.setNom(txfNom.getText());
-            nouveauObjet.setNumSerie(txfNoSerie.getText());
-            nouveauObjet.setCategorie(Objects.requireNonNull(cmbCategorie.getSelectedItem()).toString());
-            nouveauObjet.setPrix(prix);
-            nouveauObjet.setDateAchat(dateAchat.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-            nouveauObjet.setDescription(txaDescription.getText());
-
-            dialog.dispose();
-        }
-        else{
-            JOptionPane.showMessageDialog(dialog," Erreur de donnée");
-        }
-    }
-
-    //Ferme le modal
-    private void btnAnnulerAction() {
-        dialog.dispose();
-    }
-
-    //Retourne le nouvel objet à ajouter à l'inventaire
-    public Inventaire getNouveauObjet(){
-        return nouveauObjet;
     }
 
 }

@@ -1,3 +1,9 @@
+/*
+Objectif: Modal qui sert à ajouter un un entretien
+  Auteur: Marc-Antoine Dubois
+  Date: 2021-05-17 Session H2021
+ */
+
 import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import java.awt.*;
@@ -7,18 +13,18 @@ import java.time.ZoneId;
 public class ViewAjoutEntretien extends JDialog {
     JDialog dialog; //Frame du modal
 
-    JLabel lblDate;
-    JLabel lblDescription;
-    JDateChooser dateEntretien;
-    JTextArea txaDescription;
+    JLabel lblDate; // Label de la date
+    JLabel lblDescription; // Label de la description
+    JDateChooser dateEntretien; // Date Chooser pour la date d'entretien
+    JTextArea txaDescription; // TextArea pour la description
+    JScrollPane scrollPaneDescription; // Scroll pane qui permet de scroll dans la description
 
-    JButton btnAjouter;
-    JButton btnAnnuler;
+    JButton btnAjouter; // Bouton qui sert à ajouter un entretien
+    JButton btnAnnuler; // Bouton qui sert à annuler l'ajout
 
-    boolean estValide = false;
+    boolean estValide = false; // Si l'entretien contient une description et date valide, sera vrai
 
     public ViewAjoutEntretien(){
-
 
         //Création labels
         lblDate = new JLabel("*Date:");
@@ -30,17 +36,66 @@ public class ViewAjoutEntretien extends JDialog {
         btnAnnuler= new JButton("Annuler");
         btnAnnuler.addActionListener(e-> btnAnnulerAction());
 
-
         //Création date
         dateEntretien = new JDateChooser();
         dateEntretien.setDateFormatString("dd MMM yyyy");
 
         //Création textarea
         txaDescription = new JTextArea();
-        JScrollPane scrollPaneDescription = new JScrollPane(txaDescription);
+        scrollPaneDescription = new JScrollPane(txaDescription);
 
+        //Création de l'interface
+        initialiserInterface();
+    }
 
-        //region interface
+    /**
+     * Listener pour le bouton ajouter, ajoute l'entretien
+     */
+    private void btnAjouterAction() {
+        if(dateEntretien.getDate() != null && !txaDescription.getText().equals("")){
+            estValide = true;
+            dialog.dispose();
+        }
+        else{
+            JOptionPane.showMessageDialog(dialog," Erreur de donnée");
+        }
+    }
+
+    /**
+     * Listener pour le bouton annuler, annule l'ajout et ferme le modal
+     */
+    private void btnAnnulerAction() {
+        dialog.dispose();
+    }
+
+    /**
+     * Retourne le status de l'entretien
+     * @return Si l'entretien ne contient pas une date et une description, retournera faux
+     */
+    public boolean getEntretienEstValide(){
+        return estValide;
+    }
+
+    /**
+     * Retourne la date de l'entretien
+     * @return date d'entretien en LocalDate
+     */
+    public LocalDate getDateEntretien(){
+        return dateEntretien.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    /**
+     * Retourne la description
+     * @return description en String
+     */
+    public String getDescription(){
+        return txaDescription.getText();
+    }
+
+    /**
+     * Initialise l'interface
+     */
+    private void initialiserInterface(){
         JPanel pnlEntretien = new JPanel(new GridBagLayout());
         GridBagConstraints mainConstraints = new GridBagConstraints();
         mainConstraints.insets = new Insets(5,10,0,10);
@@ -88,33 +143,5 @@ public class ViewAjoutEntretien extends JDialog {
 
         dialog.add(pnlCentre);
         dialog.setVisible(true);
-        //endregion
-
-    }
-
-    private void btnAjouterAction() {
-        if(dateEntretien.getDate() != null && !txaDescription.getText().equals("")){
-            estValide = true;
-            dialog.dispose();
-        }
-        else{
-            JOptionPane.showMessageDialog(dialog," Erreur de donnée");
-        }
-    }
-
-    private void btnAnnulerAction() {
-        dialog.dispose();
-    }
-
-    public boolean getEntretienEstValide(){
-        return estValide;
-    }
-
-    public LocalDate getDateEntretien(){
-        return dateEntretien.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-    }
-
-    public String getDescription(){
-        return txaDescription.getText();
     }
 }

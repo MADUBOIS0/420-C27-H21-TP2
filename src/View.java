@@ -1,5 +1,5 @@
 /*
-  Objectif: Application qui sert a gerer un inventaire, ajouter des entretiens, peut chargers des données à partir d'un fichier .dat, créer de nouveaux fichiers et exporter les données en .txt
+  Objectif: Application qui sert à gerer un inventaire, ajouter des entretiens, peut charger des données à partir d'un fichier .dat, créer de nouveaux fichiers et exporter les données en .txt
   Auteur: Marc-Antoine Dubois
   Date: 2021-05-17 Session H2021
  */
@@ -36,6 +36,7 @@ public class View extends JFrame {
 
     JFileChooser fc;  // Sert à sélectionner un fichier sur l'ordinateur
     File fichierInventaire; //Contient les informations du fichier sélectionner par fc.
+    File fichierExport; //Contient les informations du fichier export
 
     ArrayList<Inventaire> inventaireData = new ArrayList<>(); // Liste d'objet de type Inventaire, sert à cataloguer tout les objets.
 
@@ -298,7 +299,7 @@ public class View extends JFrame {
         // Verifier si une ligne valide de tableau inventaire et entretien est sélectionner
         if(getInventairePosition(tableInventaire.getSelectedRow()) != -1 && tableEntretien.getSelectedRow() != -1){
             LocalDate dateEntretien = (LocalDate)modelEntretien.getValueAt(tableEntretien.getSelectedRow(), 0); //Date de l'entretien, sert de clé pour LinkedHashMap
-            inventaireData.get(getInventairePosition(tableInventaire.getSelectedRow())).getEntretien().remove(dateEntretien);
+            inventaireData.get(getInventairePosition(tableInventaire.getSelectedRow())).removeEntretien(dateEntretien);
             modelEntretien.removeRow(tableEntretien.getSelectedRow());
         }
     }
@@ -314,6 +315,7 @@ public class View extends JFrame {
                 inventaireData.add(nouvelleObjet);
                 modelInventaire.addRow(new Object[] {nouvelleObjet.getNom(), nouvelleObjet.getCategorie(), nouvelleObjet.getPrix(), nouvelleObjet.getDateAchat(), nouvelleObjet.getDescription()});
               (tableInventaire.getSelectionModel()).setSelectionInterval(modelInventaire.getRowCount()-1, modelInventaire.getRowCount()-1);
+              modelEntretien.setRowCount(0);
             }
         }
     }
@@ -486,29 +488,29 @@ public class View extends JFrame {
         if((fichierInventaire != null && !fichierInventaire.getName().equals("")) || (fichierInventaire != null && fichierInventaire.length() == 0)){
             fc.resetChoosableFileFilters();
             fc.setFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
-            fc.setDialogTitle("Enregistrer inventaire");
+            fc.setDialogTitle("Exporter inventaire");
             int reponse = fc.showSaveDialog(frame);
 
             if(reponse == JFileChooser.APPROVE_OPTION){
                 if(!fc.getSelectedFile().getPath().endsWith("txt")){
-                    fichierInventaire = new File(fc.getSelectedFile()+".txt");
+                    fichierExport = new File(fc.getSelectedFile()+".txt");
                 }
-                else{ fichierInventaire = fc.getSelectedFile();}
+                else{ fichierExport = fc.getSelectedFile();}
 
                 String text = ""; // Le contenu du fichier à exporter
                 for(Inventaire objet : inventaireData){
 
-                    text = text.concat("\n" + objet.getNom() + ", " + objet.getNumSerie() + ", " + objet.getCategorie() + ", " + objet.getPrix() + ", " + objet.getDateAchat() + ", " + objet.getDescription());
+                    text = text.concat("\n" + objet.getNom() + ", " + objet.getNumSerie() + ", " + objet.getCategorie() + ", " + objet.getPrix() + ", " + objet.getDateAchat() + ", " + objet.getDescription()) + "\n";
 
                     for (LocalDate key : objet.getEntretien().keySet()){
-                        text = text.concat("\n" + key + ", " + objet.getEntretien().get(key));
+                        text = text.concat(key + ", " + objet.getEntretien().get(key));
                     }
                     text = text.concat("\n");
                 }
 
                 try{
-                    fichierInventaire.createNewFile();
-                    FileWriter fw = new FileWriter(fichierInventaire.getPath());
+                    fichierExport.createNewFile();
+                    FileWriter fw = new FileWriter(fichierExport.getPath());
                     fw.write(text);
                     fw.close();
                 }catch(IOException e){
@@ -517,6 +519,7 @@ public class View extends JFrame {
             }
             fc.resetChoosableFileFilters();
             fc.setFileFilter(new FileNameExtensionFilter("*.dat", "dat"));
+            fichierExport = null;
         }
         else {
             JOptionPane.showMessageDialog(frame, "Aucun inventaire ouvert");
@@ -647,7 +650,6 @@ public class View extends JFrame {
         frame.add(pnlBas, BorderLayout.SOUTH);
 
         frame.setVisible(true);
-        //endregion
     }
 
     public static void main(String[] args) {

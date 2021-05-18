@@ -1,5 +1,10 @@
-import com.toedter.calendar.JDateChooser;
+/*
+Objectif: Modal qui sert à modifier un objet Inventaire existant
+  Auteur: Marc-Antoine Dubois
+  Date: 2021-05-17 Session H2021
+ */
 
+import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -25,15 +30,12 @@ public class ViewModificationInventaire extends JDialog {
     JTextArea txaDescription; // Input pour la description de l'objet
     JComboBox<String> cmbCategorie; // Input pour la catégorie de l'objet
     JDateChooser dateAchat; // Input pour la date d'achat
+    JScrollPane scrollPaneDescription; //Scroll pane pour description
 
     JButton btnModifier; // Bouton pour ajouter l'item à la table d'inventaire
     JButton btnAnnuler; // Bouton pour annuler l'ajout d'item
 
-    private Inventaire objetModifier;
-
     boolean estModifier = false; // Sert à déterminé si l'objet est modifié
-
-
 
     public ViewModificationInventaire(Inventaire objetModifier){
 
@@ -87,10 +89,17 @@ public class ViewModificationInventaire extends JDialog {
         btnAnnuler = new JButton("Annuler");
         btnAnnuler.addActionListener(e->btnAnnulerAction());
 
-        //region Interface
         // Création scrollPane pour textArea
-        JScrollPane scrollPaneDescription = new JScrollPane(txaDescription);
+        scrollPaneDescription = new JScrollPane(txaDescription);
 
+        //Création interface
+        initialiserInterface();
+    }
+
+    /**
+     * Initialiser l'interface
+     */
+    private void initialiserInterface(){
         // Création du modal/frame
         dialog = new JDialog((JDialog)null, "Modification inventaire", true);
         dialog.setSize(new Dimension(600,350));
@@ -191,10 +200,12 @@ public class ViewModificationInventaire extends JDialog {
 
         dialog.add(pnlMain);
         dialog.setVisible(true);
-        //endregion
     }
 
-    // Ajoute l'objet à la table inventaire
+    /**
+     * Listener bouton modifer, modifie un objet Inventaire avec les champs de l'interface
+     * @param objetModifier l'objet à modifier
+     */
     private void btnModifierAction(Inventaire objetModifier) {
 
         DecimalFormat df = new DecimalFormat("#.##"); // pattern pour round deux chiffre après virgule
@@ -209,7 +220,6 @@ public class ViewModificationInventaire extends JDialog {
             objetModifier.setDateAchat(dateAchat.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
             objetModifier.setDescription(txaDescription.getText());
 
-            this.objetModifier = objetModifier;
             estModifier= true;
             dialog.dispose();
         }
@@ -219,19 +229,11 @@ public class ViewModificationInventaire extends JDialog {
         }
     }
 
-    //Ferme le modal
+    /**
+     * Listener pour annuler l'ajout, ferme le modal
+     */
     private void btnAnnulerAction() {
         dialog.dispose();
-    }
-
-    //Retourne les modifications de l'objet
-    public Inventaire getObjetModification(){
-        return this.objetModifier;
-    }
-
-    // Retourne si des données ont été modifier
-    public boolean getestModifier(){
-        return estModifier;
     }
 
 }
